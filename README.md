@@ -1,2 +1,2 @@
-# Zeedebyte_MobileApp
-Aplicación móvil para la empresa ZeedeByte
+# nombreapp_MobileApp
+Aplicación móvil para la empresa ----
