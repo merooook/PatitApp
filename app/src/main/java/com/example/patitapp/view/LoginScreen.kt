@@ -18,6 +18,19 @@ fun LoginScreen(
 ){
     val estado by viewModel.estado.collectAsState()
 
+    // Si la validación fue exitosa, navegamos al Home
+    LaunchedEffect(estado) {
+        if (estado.errores.usuario == null && estado.errores.password == null
+            && estado.usuario.isNotBlank() && estado.password.isNotBlank()
+        ) {
+            // Navegar al Home y limpiar el backstack para que no vuelva al login
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            }
+        }
+    }
+
+
     Scaffold(
         topBar = {
             TopAppBar(

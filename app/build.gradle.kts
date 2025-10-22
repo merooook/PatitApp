@@ -54,6 +54,8 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation(libs.androidx.navigation.compose)
+    // GPS / Fused Location
+    implementation("com.google.android.gms:play-services-location:21.3.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
