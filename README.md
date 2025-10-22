@@ -1,2 +1,2 @@
-# nombreapp_MobileApp
-Aplicación móvil para la empresa ----
+# PatitApp_MobileApp
+Aplicación móvil para la empresa Patitas
