@@ -59,21 +59,22 @@ fun LoginScreen(
                     estado.errores.password?.let{
                         Text(it, color = MaterialTheme.colorScheme.error)
                     }
-                }
+                },
+                modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(16.dp))
-        }
-        Button(
-            onClick= {
-                viewModel.validarDatos()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ){
-            Text("Login")
-        }
-        Spacer(Modifier.height(8.dp))
-        TextButton(onClick= {navController.navigate("Sign in")}){
-            Text("¿No tienes cuenta?, Regístrate Aquí")
+            Button(
+                onClick= {
+                    viewModel.validarDatos()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Text("Login")
+            }
+            Spacer(Modifier.height(8.dp))
+            TextButton(onClick= {navController.navigate("signin")}){
+                Text("¿No tienes cuenta?, Regístrate Aquí")
+            }
         }
     }
 }

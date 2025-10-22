@@ -100,15 +100,14 @@ fun SigninScreen(
                 Text("Acepto los términos y condiciones")
             }
             Spacer(Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    viewModel.validarDatos()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Text("Sign In")
+            }
         }
-        Button(
-            onClick = {
-                viewModel.validarDatos()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ){
-            Text("Sign In")
-        }
-        //navegación a Home
     }
 }
