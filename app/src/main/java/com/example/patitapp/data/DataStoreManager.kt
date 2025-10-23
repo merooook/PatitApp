@@ -1,31 +1,32 @@
 package com.example.patitapp.data
 
 import android.content.Context
-import androidx.datastore.preferences.core.*
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
-val Context.dataStore by preferencesDataStore(name = "app_prefs")
+// DataStore para guardar datos de usuario simples
+val Context.dataStore by preferencesDataStore("user_prefs")
 
-class DataStoreManager(private val context: Context){
-    private val gson = Gson()
+class DataStoreManager(private val context: Context) {
 
-    private val USERS_KEY = stringPreferencesKey("usuarios")
+    // CAMBIO: agrego función "saveUser" para guardar el usuario actual --> recordar qué usuario inició sesión
+    // para que HomeScreen lo salude por su nombre
 
-    suspend fun saveUsers(users: List<Usuario>){
-        val json = gson.toJson(users)
-        context.dataStore.edit {prefs ->
-            prefs[USERS_KEY] = json
+    suspend fun saveUser(nombre: String) {
+        context.dataStore.edit { prefs ->
+            prefs[stringPreferencesKey("usuario_actual")] = nombre
         }
     }
 
-    fun getUsers(): Flow<List<Usuario>> {
+    // CAMBIO: agrego función "getCurrentUser" para obtener el usuario actual
+    // HomeScreen leerá  (Flow<String?>) para mostrar el saludo personalizado
+
+    fun getCurrentUser(): Flow<String?> {
         return context.dataStore.data.map { prefs ->
-            val json = prefs[USERS_KEY] ?: "[]"
-            val type = object : TypeToken<List<Usuario>>() {}.type
-            gson.fromJson(json, type)
+            prefs[stringPreferencesKey("usuario_actual")]
         }
     }
 }
