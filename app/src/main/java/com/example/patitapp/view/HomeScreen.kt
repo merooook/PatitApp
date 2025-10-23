@@ -18,7 +18,7 @@ import com.example.patitapp.data.DataStoreManager
 import com.example.patitapp.location.LocationProvider
 import kotlinx.coroutines.launch
 
-// CAMBIO: imports para el ícono de “volver”
+// Imports para el ícono de “volver”
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
@@ -32,8 +32,8 @@ import androidx.compose.material3.IconButton
 //   - Servicios        -> services?category=servicio
 //   - Tiendas          -> services?category=tienda
 //
-// CAMBIOS:  Pide autorización de ubicación justo cuando se selecciona servicio
-// se agrega TopAppBar con flecha de “volver” (navegar a la pantalla anterior)
+// Pide autorización de ubicación justo cuando se selecciona servicio
+// TopAppBar con flecha de “volver” (navegar a la pantalla anterior)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,9 +56,7 @@ fun HomeScreen(nav: NavController) {
         }
     }
 
-    // CAMBIO: derivar el nombre que se mostrará.
-    // Regla: si el valor guardado está vacío o parece correo (contiene '@'), mostrar "Fernanda".
-    // Si no, mostrar tal cual (permite nombres reales en el futuro).
+    // Derivar el nombre que se mostrará (Fernanda para efectos de demo)
     val nombreMostrado = remember(name) {
         when {
             name.isBlank() -> "Fernanda"
@@ -78,7 +76,6 @@ fun HomeScreen(nav: NavController) {
         if (granted) {
             pendingAction?.invoke()
         } else {
-            // Si el usuario rechaza el permiso se puede navegar sin ubicación o mostrar aviso
             pendingAction?.invoke()
         }
         pendingAction = null
@@ -105,14 +102,12 @@ fun HomeScreen(nav: NavController) {
         }
     }
 
-    // CAMBIO: Se introduce Scaffold con TopAppBar la flecha de “volver”
-
+    // Scaffold con TopAppBar la flecha de “volver”
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Inicio") },
                 navigationIcon = {
-                    // Se añade flecha que navega a la pantalla anterior
                     IconButton(onClick = { nav.navigateUp() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -151,19 +146,24 @@ fun HomeScreen(nav: NavController) {
             Spacer(Modifier.height(24.dp))
 
             // Botón 1: Veterinaria 24h
-            // CAMBIO: pide autorización de ubicación justo antes de navegar
+            // CAMBIO: manejo seguro de errores al obtener ubicación
             Button(
                 onClick = {
                     ensureLocationPermission {
                         scope.launch {
-                            val loc = LocationProvider.getCurrentLatLng(
-                                activity = (ctx as? android.app.Activity) ?: return@launch
-                            )
-                            val lat = loc?.first
-                            val lng = loc?.second
-                            if (lat != null && lng != null) {
-                                nav.navigate("services?category=vet24&lat=$lat&lng=$lng")
-                            } else {
+                            try {
+                                val loc = LocationProvider.getCurrentLatLng(
+                                    activity = (ctx as? android.app.Activity) ?: return@launch
+                                )
+                                val lat = loc?.first
+                                val lng = loc?.second
+
+                                if (lat != null && lng != null) {
+                                    nav.navigate("services?category=vet24&lat=$lat&lng=$lng")
+                                } else {
+                                    nav.navigate("services?category=vet24")
+                                }
+                            } catch (e: Exception) {
                                 nav.navigate("services?category=vet24")
                             }
                         }
@@ -177,8 +177,29 @@ fun HomeScreen(nav: NavController) {
             Spacer(Modifier.height(12.dp))
 
             // Botón 2: Servicios (baño, corte de uñas, peluquería)
+            // CAMBIO: manejo seguro de errores al obtener ubicación
             Button(
-                onClick = { nav.navigate("services?category=servicio") },
+                onClick = {
+                    ensureLocationPermission {
+                        scope.launch {
+                            try {
+                                val loc = LocationProvider.getCurrentLatLng(
+                                    activity = (ctx as? android.app.Activity) ?: return@launch
+                                )
+                                val lat = loc?.first
+                                val lng = loc?.second
+
+                                if (lat != null && lng != null) {
+                                    nav.navigate("services?category=servicio&lat=$lat&lng=$lng")
+                                } else {
+                                    nav.navigate("services?category=servicio")
+                                }
+                            } catch (e: Exception) {
+                                nav.navigate("services?category=servicio")
+                            }
+                        }
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Servicios (baño, uñas, peluquería)")
@@ -187,8 +208,29 @@ fun HomeScreen(nav: NavController) {
             Spacer(Modifier.height(12.dp))
 
             // Botón 3: Tiendas de mascotas
+            // CAMBIO: manejo seguro de errores al obtener ubicación
             Button(
-                onClick = { nav.navigate("services?category=tienda") },
+                onClick = {
+                    ensureLocationPermission {
+                        scope.launch {
+                            try {
+                                val loc = LocationProvider.getCurrentLatLng(
+                                    activity = (ctx as? android.app.Activity) ?: return@launch
+                                )
+                                val lat = loc?.first
+                                val lng = loc?.second
+
+                                if (lat != null && lng != null) {
+                                    nav.navigate("services?category=tienda&lat=$lat&lng=$lng")
+                                } else {
+                                    nav.navigate("services?category=tienda")
+                                }
+                            } catch (e: Exception) {
+                                nav.navigate("services?category=tienda")
+                            }
+                        }
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Tiendas de mascotas")
