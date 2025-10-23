@@ -38,7 +38,18 @@ fun SigninScreen(
                 .padding(padding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center
-        ){
+        ){  OutlinedTextField(
+            value = estado.usuario,
+            onValueChange = viewModel::onUsuarioChange,
+            label = {Text("Usuario")},
+            isError = estado.errores.usuario != null,
+            supportingText = {
+                estado.errores.usuario?.let{
+                    Text(it, color = MaterialTheme.colorScheme.error)
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+            )
             OutlinedTextField(
                 value = estado.correo,
                 onValueChange = viewModel::onCorreoChange,
@@ -102,7 +113,9 @@ fun SigninScreen(
             Spacer(Modifier.height(16.dp))
             Button(
                 onClick = {
-                    viewModel.validarDatos()
+                    if (viewModel.registrarUsuario()) {
+                        navController.navigate("login")
+                    }
                 },
                 modifier = Modifier.fillMaxWidth()
             ){

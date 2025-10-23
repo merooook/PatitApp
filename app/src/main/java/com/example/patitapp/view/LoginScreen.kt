@@ -11,6 +11,12 @@ import com.example.patitapp.viewmodel.UsuarioViewModel
 import com.example.patitapp.data.DataStoreManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -20,6 +26,7 @@ fun LoginScreen(
     appState: AppState
 ) {
     val estado by viewModel.estado.collectAsState()
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -62,6 +69,18 @@ fun LoginScreen(
                         Text(it, color = MaterialTheme.colorScheme.error)
                     }
                 },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (passwordVisible)
+                        Icons.Filled.Visibility
+                    else Icons.Filled.VisibilityOff
+
+                    val description = if (passwordVisible) "Hide password" else "Show password"
+
+                    IconButton(onClick = {passwordVisible = !passwordVisible}){
+                        Icon(imageVector  = image, description)
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(16.dp))
@@ -70,7 +89,7 @@ fun LoginScreen(
 
             Button(
                 onClick = {
-                    if (viewModel.validarLogin()) {
+                    if (viewModel.autenticarUsuario()) {
                         // CAMBIO: se agrega guardado del usuario en DataStore
                         val dataStoreManager = DataStoreManager(navController.context)
                         val usuarioIngresado = viewModel.estado.value.usuario

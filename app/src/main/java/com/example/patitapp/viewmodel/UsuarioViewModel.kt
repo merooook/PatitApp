@@ -1,6 +1,8 @@
 package com.example.patitapp.viewmodel
 
 import androidx.lifecycle.ViewModel
+import com.example.patitapp.data.MockData
+import com.example.patitapp.model.Usuario
 import com.example.patitapp.model.UsuarioErrores
 import com.example.patitapp.model.UsuarioUIState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,35 +39,48 @@ class UsuarioViewModel : ViewModel() {
         _estado.update { it.copy(aceptaTerminos = valor) }
     }
 
-    // AGREGO: validación específica para la pantalla de Login
-
-    fun validarLogin(): Boolean {
+    fun autenticarUsuario(): Boolean {
         val estadoActual = _estado.value
+        var erroresLogin = UsuarioErrores()
+        var autenticado = false
 
-        val erroresLogin = UsuarioErrores(
-            usuario = if (estadoActual.usuario.isBlank()) "No puede estar vacío" else null,
-            password = if (estadoActual.password.length < 8) "La contraseña debe tener al menos 8 caracteres" else null
-
-        )
-
-        // Actualizacion errores de login
-        _estado.update {
-            it.copy(
-                errores = it.errores.copy(
-                    usuario = erroresLogin.usuario,
-                    password = erroresLogin.password
-                )
-            )
+        // 1. Validaciones básicas
+        if (estadoActual.usuario.isBlank()) {
+            erroresLogin = erroresLogin.copy(usuario = "No puede estar vacío")
+        } else if (estadoActual.usuario.length < 6) {
+            erroresLogin = erroresLogin.copy(usuario = "Debe tener al menos 6 caracteres")
         }
 
-        return erroresLogin.usuario == null && erroresLogin.password == null
+        if (estadoActual.password.length < 8) {
+            erroresLogin = erroresLogin.copy(password = "La contraseña debe tener al menos 8 caracteres")
+        }
+
+        _estado.update { it.copy(errores = erroresLogin) }
+
+        // Si no hay errores de validación, procedemos a autenticar
+        if (erroresLogin.usuario == null && erroresLogin.password == null) {
+            val usuarioEncontrado = MockData.listaUsuarios.find { it.nombre == estadoActual.usuario }
+
+            if (usuarioEncontrado == null) {
+                // Usuario no existe
+                _estado.update { it.copy(errores = it.errores.copy(usuario = "Usuario o contraseña incorrectos")) }
+            } else if (usuarioEncontrado.password != estadoActual.password) {
+                // Contraseña incorrecta
+                _estado.update { it.copy(errores = it.errores.copy(usuario = "Usuario o contraseña incorrectos")) }
+            } else {
+                // Autenticación exitosa
+                autenticado = true
+            }
+        }
+
+        return autenticado
     }
 
 
     fun validarDatos(): Boolean {
         val estadoActual = _estado.value
         val errores = UsuarioErrores(
-            usuario = if (estadoActual.usuario.isBlank()) "No puede estar vacío" else null,
+            usuario = if (estadoActual.usuario.isBlank()) "No puede estar vacío" else if (estadoActual.usuario.length < 6) "Debe tener al menos 6 caracteres" else null,
             correo = if (!estadoActual.correo.contains("@")) "Correo Inválido" else null,
             password = if (estadoActual.password.length < 8) "La contraseña debe tener al menos 8 caracteres" else null,
             confirmPassword = if (estadoActual.password != estadoActual.confirmPassword) "Las contraseñas no coinciden" else null,
@@ -86,5 +101,29 @@ class UsuarioViewModel : ViewModel() {
 
     }
 
+    fun registrarUsuario(): Boolean {
+        if (!validarDatos()) {
+            return false
+        }
+
+        val estadoActual = _estado.value
+        val usuarioExistente = MockData.listaUsuarios.find { it.nombre == estadoActual.usuario }
+
+        if (usuarioExistente != null) {
+            _estado.update { it.copy(errores = it.errores.copy(usuario = "El nombre de usuario ya existe")) }
+            return false
+        }
+
+        // Add user to mock data
+        val nuevoUsuario = Usuario(
+            nombre = estadoActual.usuario,
+            correo = estadoActual.correo,
+            password = estadoActual.password,
+            direccion = estadoActual.direccion
+        )
+        MockData.listaUsuarios.add(nuevoUsuario)
+
+        return true
+    }
 
 }

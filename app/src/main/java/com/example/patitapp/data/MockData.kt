@@ -2,10 +2,20 @@ package com.example.patitapp.data
 
 import com.example.patitapp.R
 import com.example.patitapp.model.Service
+import com.example.patitapp.model.Usuario
 
 // Fuente de datos MOCK (sin backend) para la lista.
 
 object MockData {
+    val listaUsuarios = mutableListOf(
+        Usuario(
+            nombre = "testuser",
+            correo = "test@test.com",
+            password = "password123",
+            direccion = "Calle Falsa 123"
+        )
+    )
+
     val services = listOf(
         Service(
             id = 1,
