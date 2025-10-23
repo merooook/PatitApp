@@ -31,7 +31,7 @@ import androidx.compose.material3.IconButton
 //   - Veterinaria 24h  -> services?category=vet24
 //   - Servicios        -> services?category=servicio
 //   - Tiendas          -> services?category=tienda
-
+//
 // CAMBIOS:  Pide autorización de ubicación justo cuando se selecciona servicio
 // se agrega TopAppBar con flecha de “volver” (navegar a la pantalla anterior)
 
@@ -56,8 +56,18 @@ fun HomeScreen(nav: NavController) {
         }
     }
 
-    // Pedir permisos de ubicación solo cuando se requiera
+    // CAMBIO: derivar el nombre que se mostrará.
+    // Regla: si el valor guardado está vacío o parece correo (contiene '@'), mostrar "Fernanda".
+    // Si no, mostrar tal cual (permite nombres reales en el futuro).
+    val nombreMostrado = remember(name) {
+        when {
+            name.isBlank() -> "Fernanda"
+            '@' in name -> "Fernanda"
+            else -> name
+        }
+    }
 
+    // Pedir permisos de ubicación solo cuando se requiera
     var pendingAction by remember { mutableStateOf<(() -> Unit)?>(null) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -123,12 +133,15 @@ fun HomeScreen(nav: NavController) {
         ) {
             Spacer(Modifier.height(36.dp))
 
+            // CAMBIO: usar nombreMostrado para el saludo fijo "Fernanda" cuando sea email o esté vacío.
             Text(
-                text = "¡Hola, $name!",
+                text = "¡Hola, $nombreMostrado!",
                 style = MaterialTheme.typography.headlineMedium,
                 textAlign = TextAlign.Center
             )
+
             Spacer(Modifier.height(8.dp))
+
             Text(
                 text = "¿Qué quieres hacer hoy?",
                 style = MaterialTheme.typography.bodyLarge,
