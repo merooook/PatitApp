@@ -5,125 +5,166 @@ import com.example.patitapp.data.MockData
 import com.example.patitapp.model.Usuario
 import com.example.patitapp.model.UsuarioErrores
 import com.example.patitapp.model.UsuarioUIState
+import com.example.patitapp.utils.Validations
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
+
 class UsuarioViewModel : ViewModel() {
 
     private val _estado = MutableStateFlow(UsuarioUIState())
-
     val estado: StateFlow<UsuarioUIState> = _estado
 
-    fun onUsuarioChange (valor : String) {
+    // LOGIN --> correo + password
+    fun onCorreoChange(valor: String) {
+        _estado.update { st ->
+            val st2 = st.copy(correo = valor, errores = st.errores.copy(correo = null))
+            st2.recalcularPuedeIngresarLogin()
+        }
+    }
+
+    fun onPasswordChange(valor: String) {
+        _estado.update { st ->
+            val st2 = st.copy(password = valor, errores = st.errores.copy(password = null))
+            st2.recalcularPuedeIngresarLogin()
+        }
+    }
+
+    // SIGNIN
+    fun onUsuarioChange(valor: String) {
         _estado.update { it.copy(usuario = valor, errores = it.errores.copy(usuario = null)) }
     }
 
-    fun onCorreoChange (valor : String) {
-        _estado.update { it.copy(correo = valor, errores = it.errores.copy(correo = null)) }
-    }
-
-    fun onPasswordChange (valor : String) {
-        _estado.update { it.copy(password = valor, errores = it.errores.copy(password = null)) }
-    }
-
-    fun onConfirmPasswordChange (valor : String) {
+    fun onConfirmPasswordChange(valor: String) {
         _estado.update { it.copy(confirmPassword = valor, errores = it.errores.copy(confirmPassword = null)) }
     }
 
-    fun onDireccionChange (valor : String) {
+    fun onDireccionChange(valor: String) {
         _estado.update { it.copy(direccion = valor, errores = it.errores.copy(direccion = null)) }
     }
 
-    fun onAceptarTerminosChange(valor : Boolean) {
+    fun onAceptarTerminosChange(valor: Boolean) {
         _estado.update { it.copy(aceptaTerminos = valor) }
     }
 
+    // Autenticación requiere correo válido + contraseña fuerte
+    // Busca por correo y si no existe intenta por nombre para compatibilidad
+
     fun autenticarUsuario(): Boolean {
-        val estadoActual = _estado.value
-        var erroresLogin = UsuarioErrores()
-        var autenticado = false
+        val st = _estado.value
+        var errs = UsuarioErrores()
 
-        // 1. Validaciones básicas
-        if (estadoActual.usuario.isBlank()) {
-            erroresLogin = erroresLogin.copy(usuario = "No puede estar vacío")
-        } else if (estadoActual.usuario.length < 6) {
-            erroresLogin = erroresLogin.copy(usuario = "Debe tener al menos 6 caracteres")
+        // Validaciones de formato: correo y contraseña
+        errs = errs.copy(
+            correo = when {
+                st.correo.isBlank() -> "Ingresa tu correo"
+                !com.example.patitapp.utils.Validations.esEmail(st.correo) -> "Formato de correo inválido"
+                else -> null
+            },
+            password = when {
+                st.password.isBlank() -> "Ingresa tu contraseña"
+                !com.example.patitapp.utils.Validations.esPasswordFuerte(st.password) -> "Mín. 8 con letras y números"
+                else -> null
+            }
+        )
+
+        // Actualizamos errores para que la UI los muestre si corresponde
+        _estado.update { it.copy(errores = errs) }
+
+        // Si hay errores de formato, no seguimos
+        val sinErrores = errs.correo == null && errs.password == null
+        if (!sinErrores) return false
+
+        // Buscamos usuario por correo (preferido) o por nombre (compatibilidad con versiones previas)
+        var usuarioEncontrado = com.example.patitapp.data.MockData.listaUsuarios.find {
+            it.correo.equals(st.correo, ignoreCase = true)
         }
-
-        if (estadoActual.password.length < 8) {
-            erroresLogin = erroresLogin.copy(password = "La contraseña debe tener al menos 8 caracteres")
-        }
-
-        _estado.update { it.copy(errores = erroresLogin) }
-
-        // Si no hay errores de validación, procedemos a autenticar
-        if (erroresLogin.usuario == null && erroresLogin.password == null) {
-            val usuarioEncontrado = MockData.listaUsuarios.find { it.nombre == estadoActual.usuario }
-
-            if (usuarioEncontrado == null) {
-                // Usuario no existe
-                _estado.update { it.copy(errores = it.errores.copy(usuario = "Usuario o contraseña incorrectos")) }
-            } else if (usuarioEncontrado.password != estadoActual.password) {
-                // Contraseña incorrecta
-                _estado.update { it.copy(errores = it.errores.copy(usuario = "Usuario o contraseña incorrectos")) }
-            } else {
-                // Autenticación exitosa
-                autenticado = true
+        if (usuarioEncontrado == null) {
+            usuarioEncontrado = com.example.patitapp.data.MockData.listaUsuarios.find {
+                it.nombre.equals(st.correo, ignoreCase = true)
             }
         }
 
-        return autenticado
+        // Si no existe, creamos el usuario con datos mínimos para permitir demostracion
+        // Nombre: parte antes de '@' si existe, o el correo completo como fallback
+
+        if (usuarioEncontrado == null) {
+            val nombreGenerado = st.correo.substringBefore('@').ifBlank { st.correo }
+            val nuevoUsuario = com.example.patitapp.model.Usuario(
+                nombre = nombreGenerado,
+                correo = st.correo,
+                password = st.password,
+                direccion = "" // campo opcional por ahora
+            )
+            com.example.patitapp.data.MockData.listaUsuarios.add(nuevoUsuario)
+            // Autenticación satisfactoria (acabamos de crear el usuario con esa contraseña)
+            return true
+        }
+
+        // Si existe, comprobamos la contraseña como antes
+        if (usuarioEncontrado.password != st.password) {
+            _estado.update {
+                it.copy(errores = it.errores.copy(correo = "Correo o contraseña incorrectos"))
+            }
+            return false
+        }
+
+        // Si todos coinciden --> autenticacion exitosa
+        return true
     }
 
-
+    // Registro con validaciones mejoradas
     fun validarDatos(): Boolean {
-        val estadoActual = _estado.value
-        val errores = UsuarioErrores(
-            usuario = if (estadoActual.usuario.isBlank()) "No puede estar vacío" else if (estadoActual.usuario.length < 6) "Debe tener al menos 6 caracteres" else null,
-            correo = if (!estadoActual.correo.contains("@")) "Correo Inválido" else null,
-            password = if (estadoActual.password.length < 8) "La contraseña debe tener al menos 8 caracteres" else null,
-            confirmPassword = if (estadoActual.password != estadoActual.confirmPassword) "Las contraseñas no coinciden" else null,
-            direccion = if (estadoActual.direccion.isBlank()) "No puede estar vacío" else null
+        val st = _estado.value
+        val errs = UsuarioErrores(
+            usuario = if (st.usuario.isBlank()) "No puede estar vacío" else if (st.usuario.length < 6) "Debe tener al menos 6 caracteres" else null,
+            correo = when {
+                st.correo.isBlank() -> "No puede estar vacío"
+                !Validations.esEmail(st.correo) -> "Correo inválido"
+                else -> null
+            },
+            password = if (!Validations.esPasswordFuerte(st.password)) "Mín. 8 con letras y números" else null,
+            confirmPassword = if (st.password != st.confirmPassword) "Las contraseñas no coinciden" else null,
+            direccion = if (st.direccion.isBlank()) "No puede estar vacío" else null
         )
 
+        _estado.update { it.copy(errores = errs) }
         val hayErrores = listOfNotNull(
-            errores.usuario,
-            errores.correo,
-            errores.password,
-            errores.confirmPassword,
-            errores.direccion
+            errs.usuario, errs.correo, errs.password, errs.confirmPassword, errs.direccion
         ).isNotEmpty()
-
-        _estado.update { it.copy(errores = errores) }
-
         return !hayErrores
-
     }
 
     fun registrarUsuario(): Boolean {
-        if (!validarDatos()) {
-            return false
+        if (!validarDatos()) return false
+        val st = _estado.value
+
+        val usuarioExistente = MockData.listaUsuarios.find {
+            it.nombre.equals(st.usuario, ignoreCase = true) || it.correo.equals(st.correo, ignoreCase = true)
         }
-
-        val estadoActual = _estado.value
-        val usuarioExistente = MockData.listaUsuarios.find { it.nombre == estadoActual.usuario }
-
         if (usuarioExistente != null) {
-            _estado.update { it.copy(errores = it.errores.copy(usuario = "El nombre de usuario ya existe")) }
+            _estado.update { it.copy(errores = it.errores.copy(usuario = "El usuario/correo ya existe")) }
             return false
         }
 
-        // Add user to mock data
         val nuevoUsuario = Usuario(
-            nombre = estadoActual.usuario,
-            correo = estadoActual.correo,
-            password = estadoActual.password,
-            direccion = estadoActual.direccion
+            nombre = st.usuario,
+            correo = st.correo,
+            password = st.password,
+            direccion = st.direccion
         )
         MockData.listaUsuarios.add(nuevoUsuario)
-
         return true
+    }
+
+    // HELPERS
+    // Antes: validaba email+contraseña fuerte para habilitar el botón
+    // Ahora: solo pide campos no vacíos; la validación estricta queda para autenticarUsuario()
+    private fun UsuarioUIState.recalcularPuedeIngresarLogin(): UsuarioUIState {
+        val okCorreo = correo.isNotBlank()
+        val okPass = password.isNotBlank()
+        return copy(puedeIngresar = okCorreo && okPass)
     }
 
 }
