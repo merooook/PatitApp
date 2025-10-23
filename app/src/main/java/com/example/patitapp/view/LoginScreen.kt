@@ -8,6 +8,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.patitapp.data.AppState
 import com.example.patitapp.viewmodel.UsuarioViewModel
+import com.example.patitapp.data.DataStoreManager
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -17,19 +20,6 @@ fun LoginScreen(
     appState: AppState
 ) {
     val estado by viewModel.estado.collectAsState()
-
-    // CAMBIO:
-    // Dejo comentado este bloque porque hacia que hubiera navegación automática cada vez que el estado cambiaba y los campos quedaban “válidos”
-
-    // LaunchedEffect(estado) {
-    //     if (estado.errores.usuario == null && estado.errores.password == null
-    //         && estado.usuario.isNotBlank() && estado.password.isNotBlank()
-    //     ) {
-    //         navController.navigate("home") {
-    //             popUpTo("login") { inclusive = true }
-    //         }
-    //     }
-    // }
 
     Scaffold(
         topBar = {
@@ -76,11 +66,20 @@ fun LoginScreen(
             )
             Spacer(Modifier.height(16.dp))
 
-            // CAMBIO: usar validarLogin() (solo usuario + password) y navegar si es válido
+            // CAMBIO: botón valida y guarda el usuario antes de navegar
 
             Button(
                 onClick = {
                     if (viewModel.validarLogin()) {
+                        // CAMBIO: se agrega guardado del usuario en DataStore
+                        val dataStoreManager = DataStoreManager(navController.context)
+                        val usuarioIngresado = viewModel.estado.value.usuario
+
+                        GlobalScope.launch {
+                            dataStoreManager.saveUser(usuarioIngresado)
+                        }
+
+                        // CAMBIO: navegación a Home después de guardar
                         navController.navigate("home") {
                             popUpTo("login") { inclusive = true }
                         }
@@ -90,7 +89,6 @@ fun LoginScreen(
             ) {
                 Text("Login")
             }
-
 
             Spacer(Modifier.height(8.dp))
             TextButton(onClick = { navController.navigate("signin") }) {
