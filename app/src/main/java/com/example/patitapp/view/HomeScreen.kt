@@ -35,6 +35,7 @@ import androidx.compose.material3.IconButton
 // CAMBIOS:  Pide autorización de ubicación justo cuando se selecciona servicio
 // se agrega TopAppBar con flecha de “volver” (navegar a la pantalla anterior)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(nav: NavController) {
     val ctx = LocalContext.current
