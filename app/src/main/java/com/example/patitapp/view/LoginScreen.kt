@@ -1,6 +1,7 @@
 package com.example.patitapp.view
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -9,7 +10,6 @@ import androidx.navigation.NavController
 import com.example.patitapp.data.AppState
 import com.example.patitapp.viewmodel.UsuarioViewModel
 import com.example.patitapp.data.DataStoreManager
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -17,6 +17,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,6 +31,7 @@ fun LoginScreen(
 ) {
     val estado by viewModel.estado.collectAsState()
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -46,23 +51,31 @@ fun LoginScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center
         ) {
+            // Campo de correo
             OutlinedTextField(
-                value = estado.usuario,
-                onValueChange = viewModel::onUsuarioChange,
-                label = { Text("Usuario") },
-                isError = estado.errores.usuario != null,
+                value = estado.correo,
+                onValueChange = viewModel::onCorreoChange,
+                label = { Text("Correo") },
+                isError = estado.errores.correo != null,
                 supportingText = {
-                    estado.errores.usuario?.let {
+                    estado.errores.correo?.let {
                         Text(it, color = MaterialTheme.colorScheme.error)
                     }
                 },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
+
             Spacer(Modifier.height(8.dp))
+
+            // Campo de contraseña
             OutlinedTextField(
                 value = estado.password,
                 onValueChange = viewModel::onPasswordChange,
-                label = { Text("Password") },
+                label = { Text("Contraseña") },
                 isError = estado.errores.password != null,
                 supportingText = {
                     estado.errores.password?.let {
@@ -71,47 +84,44 @@ fun LoginScreen(
                 },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    val image = if (passwordVisible)
-                        Icons.Filled.Visibility
-                    else Icons.Filled.VisibilityOff
-
-                    val description = if (passwordVisible) "Hide password" else "Show password"
-
-                    IconButton(onClick = {passwordVisible = !passwordVisible}){
-                        Icon(imageVector  = image, description)
+                    val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                    val description = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(imageVector = image, contentDescription = description)
                     }
                 },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
+
             Spacer(Modifier.height(16.dp))
 
-            // CAMBIO: botón valida y guarda el usuario antes de navegar
-
+            // Botón de login
             Button(
                 onClick = {
                     if (viewModel.autenticarUsuario()) {
-                        // CAMBIO: se agrega guardado del usuario en DataStore
                         val dataStoreManager = DataStoreManager(navController.context)
-                        val usuarioIngresado = viewModel.estado.value.usuario
+                        val correoIngresado = viewModel.estado.value.correo
+                        scope.launch { dataStoreManager.saveUser(correoIngresado) }
 
-                        GlobalScope.launch {
-                            dataStoreManager.saveUser(usuarioIngresado)
-                        }
-
-                        // CAMBIO: navegación a Home después de guardar
                         navController.navigate("home") {
                             popUpTo("login") { inclusive = true }
                         }
                     }
                 },
+                enabled = estado.puedeIngresar,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Login")
             }
 
             Spacer(Modifier.height(8.dp))
+
             TextButton(onClick = { navController.navigate("signin") }) {
-                Text("¿No tienes cuenta?, Regístrate Aquí")
+                Text("¿No tienes cuenta? Regístrate aquí")
             }
         }
     }
