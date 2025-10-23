@@ -82,37 +82,28 @@ fun HomeScreen(nav: NavController) {
     }
 
     fun ensureLocationPermission(then: () -> Unit) {
-        try {
-            val fineGranted = ContextCompat.checkSelfPermission(
-                ctx, Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-            val coarseGranted = ContextCompat.checkSelfPermission(
-                ctx, Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
+        val fineGranted = ContextCompat.checkSelfPermission(
+            ctx, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val coarseGranted = ContextCompat.checkSelfPermission(
+            ctx, Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
 
-            if (fineGranted || coarseGranted) {
-                then() // si ya tiene permisos, continúa
-            } else {
-                val activity = ctx as? android.app.Activity
-                if (activity != null) {
-                    permissionLauncher.launch(
-                        arrayOf(
-                            Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION
-                        )
-                    )
-                    // continúa después del permiso
-                    then()
-                } else {
-                    // si no hay activity válida, sigue sin ubicación (para evitar cierre)
-                    then()
-                }
-            }
-        } catch (e: Exception) {
-            // si algo falla, sigue normal sin ubicación
+        if (fineGranted || coarseGranted) {
+            // Si ya tiene permisos, ejecutamos la acción directamente
             then()
+        } else {
+            // Guardamos la acción pendiente y lanzamos la solicitud de permisos
+            pendingAction = then
+            permissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
         }
     }
+
 
 
     // Scaffold con TopAppBar la flecha de “volver”
