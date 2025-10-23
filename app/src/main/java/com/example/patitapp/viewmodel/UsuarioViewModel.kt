@@ -37,6 +37,31 @@ class UsuarioViewModel : ViewModel() {
         _estado.update { it.copy(aceptaTerminos = valor) }
     }
 
+    // AGREGO: validación específica para la pantalla de Login
+
+    fun validarLogin(): Boolean {
+        val estadoActual = _estado.value
+
+        val erroresLogin = UsuarioErrores(
+            usuario = if (estadoActual.usuario.isBlank()) "No puede estar vacío" else null,
+            password = if (estadoActual.password.length < 8) "La contraseña debe tener al menos 8 caracteres" else null
+
+        )
+
+        // Actualizacion errores de login
+        _estado.update {
+            it.copy(
+                errores = it.errores.copy(
+                    usuario = erroresLogin.usuario,
+                    password = erroresLogin.password
+                )
+            )
+        }
+
+        return erroresLogin.usuario == null && erroresLogin.password == null
+    }
+
+
     fun validarDatos(): Boolean {
         val estadoActual = _estado.value
         val errores = UsuarioErrores(
