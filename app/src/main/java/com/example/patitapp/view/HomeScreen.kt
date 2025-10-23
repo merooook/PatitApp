@@ -146,24 +146,27 @@ fun HomeScreen(nav: NavController) {
             Spacer(Modifier.height(24.dp))
 
             // Botón 1: Veterinaria 24h
-            // CAMBIO: manejo seguro de errores al obtener ubicación
             Button(
                 onClick = {
                     ensureLocationPermission {
                         scope.launch {
                             try {
-                                val loc = LocationProvider.getCurrentLatLng(
-                                    activity = (ctx as? android.app.Activity) ?: return@launch
-                                )
-                                val lat = loc?.first
-                                val lng = loc?.second
-
-                                if (lat != null && lng != null) {
-                                    nav.navigate("services?category=vet24&lat=$lat&lng=$lng")
+                                // CAMBIO: reobtenemos activity cada vez para evitar null
+                                val activity = ctx as? android.app.Activity
+                                if (activity != null) {
+                                    val loc = LocationProvider.getCurrentLatLng(activity = activity)
+                                    val lat = loc?.first
+                                    val lng = loc?.second
+                                    if (lat != null && lng != null) {
+                                        nav.navigate("services?category=vet24&lat=$lat&lng=$lng")
+                                    } else {
+                                        nav.navigate("services?category=vet24")
+                                    }
                                 } else {
                                     nav.navigate("services?category=vet24")
                                 }
                             } catch (e: Exception) {
+                                e.printStackTrace() // evita crash silencioso
                                 nav.navigate("services?category=vet24")
                             }
                         }
@@ -176,25 +179,27 @@ fun HomeScreen(nav: NavController) {
 
             Spacer(Modifier.height(12.dp))
 
-            // Botón 2: Servicios (baño, corte de uñas, peluquería)
-            // CAMBIO: manejo seguro de errores al obtener ubicación
+// Botón 2: Servicios
             Button(
                 onClick = {
                     ensureLocationPermission {
                         scope.launch {
                             try {
-                                val loc = LocationProvider.getCurrentLatLng(
-                                    activity = (ctx as? android.app.Activity) ?: return@launch
-                                )
-                                val lat = loc?.first
-                                val lng = loc?.second
-
-                                if (lat != null && lng != null) {
-                                    nav.navigate("services?category=servicio&lat=$lat&lng=$lng")
+                                val activity = ctx as? android.app.Activity
+                                if (activity != null) {
+                                    val loc = LocationProvider.getCurrentLatLng(activity = activity)
+                                    val lat = loc?.first
+                                    val lng = loc?.second
+                                    if (lat != null && lng != null) {
+                                        nav.navigate("services?category=servicio&lat=$lat&lng=$lng")
+                                    } else {
+                                        nav.navigate("services?category=servicio")
+                                    }
                                 } else {
                                     nav.navigate("services?category=servicio")
                                 }
                             } catch (e: Exception) {
+                                e.printStackTrace()
                                 nav.navigate("services?category=servicio")
                             }
                         }
@@ -207,25 +212,27 @@ fun HomeScreen(nav: NavController) {
 
             Spacer(Modifier.height(12.dp))
 
-            // Botón 3: Tiendas de mascotas
-            // CAMBIO: manejo seguro de errores al obtener ubicación
+// Botón 3: Tiendas
             Button(
                 onClick = {
                     ensureLocationPermission {
                         scope.launch {
                             try {
-                                val loc = LocationProvider.getCurrentLatLng(
-                                    activity = (ctx as? android.app.Activity) ?: return@launch
-                                )
-                                val lat = loc?.first
-                                val lng = loc?.second
-
-                                if (lat != null && lng != null) {
-                                    nav.navigate("services?category=tienda&lat=$lat&lng=$lng")
+                                val activity = ctx as? android.app.Activity
+                                if (activity != null) {
+                                    val loc = LocationProvider.getCurrentLatLng(activity = activity)
+                                    val lat = loc?.first
+                                    val lng = loc?.second
+                                    if (lat != null && lng != null) {
+                                        nav.navigate("services?category=tienda&lat=$lat&lng=$lng")
+                                    } else {
+                                        nav.navigate("services?category=tienda")
+                                    }
                                 } else {
                                     nav.navigate("services?category=tienda")
                                 }
                             } catch (e: Exception) {
+                                e.printStackTrace()
                                 nav.navigate("services?category=tienda")
                             }
                         }
