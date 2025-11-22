@@ -43,6 +43,12 @@ android {
 
 dependencies {
     implementation("androidx.compose.material:material-icons-extended-android:1.7.0-beta01")
+    implementation("androidx.activity:activity-compose:1.9.0")
+    implementation("androidx.compose.material3-material3:1.3.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
