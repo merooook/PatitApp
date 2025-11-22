@@ -6,8 +6,9 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class Controller {
 
-    @GetMapping("/GET/home")
-    fun home(): String {
-        return "Cualquier get"
+//llamada random, aquí el matías tiene que hacer GET, POST, etc a la API
+    @GetMapping("/GET/x")
+    fun cualquierGet(): String {
+        return "GET x"
     }
 }
