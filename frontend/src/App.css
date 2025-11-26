@@ -1,0 +1,72 @@
+/*
+ * App.css - Estilos globales y de maquetación para la aplicación
+ * Complementa a styles.css para un look coherente.
+*/
+
+/* 1. Estructura "Sticky Footer"
+ * Esto asegura que el footer se mantenga al final de la página,
+ * incluso si el contenido es muy corto.
+*/
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  /* flex: 1; hace que el contenido principal crezca para ocupar el espacio disponible */
+  flex: 1;
+  width: 100%;
+}
+
+/* 2. Estilos de Tipografía Global
+ * Define un estilo base para los encabezados que usa la paleta de colores
+ * de tu archivo styles.css para mantener la consistencia.
+*/
+h1, h2, h3, h4, h5, h6 {
+  color: #4a2c4a; /* El morado oscuro principal de tu paleta */
+  font-weight: 600;
+}
+
+/* 3. Estilos Generales para Enlaces
+ * Aplica un estilo base a todos los enlaces <a> que no estén dentro
+ * de componentes ya estilizados como el navbar o el footer.
+*/
+a {
+  color: #7b3f7b; /* El morado de acento de tu paleta */
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+a:hover, a:focus {
+  color: #4a2c4a; /* Se oscurece al interactuar */
+  text-decoration: underline;
+}
+
+/* 4. Animación Suave de Entrada
+ * Añade una animación sutil para que los elementos principales de la página
+ * aparezcan con suavidad al cargar.
+*/
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Aplicamos la animación a las secciones dentro del contenedor principal */
+.container > section {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+/* 5. Pequeños detalles y mejoras
+ * Una transición general para los botones de Bootstrap para que coincida
+ * con el resto de las animaciones de la web.
+*/
+.btn {
+  transition: all 0.25s ease-in-out;
+}
