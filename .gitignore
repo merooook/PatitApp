@@ -29,15 +29,18 @@ coverage/
 .env.local
 .env.*.local
 
-
-# ===== node_modules --> ignora las dependencias de la raíz
-
-# ===== /node_modules/ --> ignora node_modules de cualquier carpeta interna (como frontend/node_modules)
-
-# ===== dist/ y frontend/dist/ --> ignora los archivos generados por Vite
-
-# =====  .vscode/ y .idea/ --> ignora configuraciones de tu editor
-
-# ===== coverage/ -->  ignora reportes de tests
-
-# =====  .env --> ignora variables sensibles
+# ===== ANDROID / GRADLE (From Remote) =====
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
